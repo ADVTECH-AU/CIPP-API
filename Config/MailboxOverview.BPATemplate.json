@@ -1,0 +1,34 @@
+{
+  "style": "Table",
+  "Fields": [
+    {
+      "UseExistingInfo": false,
+      "FrontendFields": [
+        {}
+      ]
+    }
+  ],
+  "name": "MailboxOverview",
+  "API": "Exchange",
+  "command": "Get-Mailbox",
+  "Parameters": {
+    "DetailLevel": "Full"
+  },
+  "ExtractFields": [
+    "UserPrincipalName",
+    "AccountDisabled"
+  ],
+  "StoreAs": "JSON",
+  "FrontendFields": [
+    {
+      "name": "Mailbox Size",
+      "value": "MailboxOverview.MailboxSize",
+      "formatter": "number"
+    },
+    {
+      "name": "Last Login Date",
+      "value": "AccountDisabled",
+      "formatter": "string"
+    }
+  ]
+}
