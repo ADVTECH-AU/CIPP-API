@@ -1,34 +1,29 @@
 {
-  "style": "Table",
+  "name": "MailboxOverview",
+  "style": "Tenant",
   "Fields": [
     {
+      "name": "Mailbox Size",
       "UseExistingInfo": false,
       "FrontendFields": [
-        {}
-      ]
-    }
-  ],
-  "name": "MailboxOverview",
-  "API": "Exchange",
-  "command": "Get-Mailbox",
-  "Parameters": {
-    "DetailLevel": "Full"
-  },
-  "ExtractFields": [
-    "UserPrincipalName",
-    "AccountDisabled"
-  ],
-  "StoreAs": "JSON",
-  "FrontendFields": [
-    {
-      "name": "Mailbox Size",
-      "value": "MailboxOverview.MailboxSize",
-      "formatter": "number"
-    },
-    {
-      "name": "Last Login Date",
-      "value": "AccountDisabled",
-      "formatter": "string"
+        {
+          "name": "Mailbox Size",
+          "value": "MailboxOverview.MailboxSize",
+          "formatter": "number"
+        },
+        {
+          "name": "Last Login Date",
+          "value": "AccountDisabled",
+          "formatter": "string"
+        }
+      ],
+      "desc": "Mailbox Size",
+      "StoreAs": "JSON",
+      "API": "Exchange",
+      "Command": "Get-Mailbox",
+      "parameters": {
+        "DetailLevel": "Full"
+      }
     }
   ]
 }
