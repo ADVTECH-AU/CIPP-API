@@ -7,9 +7,14 @@
       "API": "Exchange",
       "command": "Get-Mailbox",
       "Parameters": {"DetailLevel": "Full"},
-      "ExtractFields": ["UserPrincipalName", "AccountDisabled"],
+      "ExtractFields": ["UserPrincipalName", "AccountDisabled","MailboxOverview.MailboxSize","AccountDisabled"],
       "StoreAs": "JSON",
       "FrontendFields": [
+          {
+            "name": "UserPrincipalName",
+            "value": "UserPrincipalName",
+            "formatter": "string"
+        },
         {
             "name": "Mailbox Size",
             "value": "MailboxOverview.MailboxSize",
