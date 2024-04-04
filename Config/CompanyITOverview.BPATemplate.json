@@ -7,24 +7,15 @@
       "API": "Exchange",
       "command": "Get-Mailbox",
       "Parameters": {"DetailLevel": "Full"},
-      "ExtractFields": ["UserPrincipalName", "AccountDisabled","MailboxOverview.MailboxSize","AccountDisabled"],
+      "ExtractFields": ["DisplayName", "PrimarySMTPAddress","RecipientType"],
       "StoreAs": "JSON",
       "FrontendFields": [
           {
-            "name": "UserPrincipalName",
-            "value": "UserPrincipalName",
-            "formatter": "string"
-        },
-        {
-            "name": "Mailbox Size",
-            "value": "MailboxOverview.MailboxSize",
-            "formatter": "number"
-        },
-        {
-            "name": "Last Login Date",
-            "value": "AccountDisabled",
-            "formatter": "string"
-        }
+            "name": "MailboxOverview",
+            "value": "MailboxOverview",
+            "formatter": "table"
+             "desc": "These are the mailboxes"
+          }
       ]
     }
   ]
