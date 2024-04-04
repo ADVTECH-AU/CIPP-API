@@ -1,9 +1,6 @@
 {
 "name": "Company IT Overview",
 "style": "Table"
-  {
-"name": "Company IT Overview",
-"style": "Table"
 "fields": [
 "name": "SharepointSettings",
 "API": "Graph",
@@ -43,4 +40,3 @@
         "formatter": "string"
     }
 ]
-}
