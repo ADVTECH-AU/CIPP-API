@@ -10,8 +10,8 @@ Function Invoke-ListUserMailboxDetails {
     [CmdletBinding()]
     param($Request, $TriggerMetadata)
 
-    $APIName = $TriggerMetadata.FunctionName
-    Write-LogMessage -user $request.headers.'x-ms-client-principal' -API $APINAME -message 'Accessed this API' -Sev 'Debug'
+    $APIName = $Request.Params.CIPPEndpoint
+    Write-LogMessage -headers $Request.Headers -API $APINAME -message 'Accessed this API' -Sev 'Debug'
 
     # Write to the Azure Functions log stream.
     Write-Host 'PowerShell HTTP trigger function processed a request.'
@@ -104,9 +104,9 @@ Function Invoke-ListUserMailboxDetails {
 
         # Determine if the user is blocked for spam
         if ($BlockedSender -and $BlockedSender.Count -gt 0) {
-            $BlockedForSpam = $True
+            $BlockedForSpam = $false
         } else {
-            $BlockedForSpam = $False
+            $BlockedForSpam = $true
         }
     } catch {
         Write-Error "Failed Fetching Data $($_.Exception.message): $($_.InvocationInfo.ScriptLineNumber)"
@@ -129,7 +129,15 @@ Function Invoke-ListUserMailboxDetails {
 
     # Get forwarding address
     $ForwardingAddress = if ($MailboxDetailedRequest.ForwardingAddress) {
-        (New-GraphGetRequest -TenantId $TenantFilter -Uri "https://graph.microsoft.com/beta/users/$($MailboxDetailedRequest.ForwardingAddress)").UserPrincipalName
+        try {
+            (New-GraphGetRequest -TenantId $TenantFilter -Uri "https://graph.microsoft.com/beta/users/$($MailboxDetailedRequest.ForwardingAddress)").UserPrincipalName
+        } catch {
+            try {
+                '{0} ({1})' -f $MailboxDetailedRequest.ForwardingAddress, (($((New-GraphGetRequest -TenantId $TenantFilter -Uri "https://graph.microsoft.com/beta/users?`$filter=displayName eq '$($MailboxDetailedRequest.ForwardingAddress)'") | Select-Object -First 1 -ExpandProperty UserPrincipalName)))
+            } catch {
+                $MailboxDetailedRequest.ForwardingAddress
+            }
+        }
     } elseif ($MailboxDetailedRequest.ForwardingSmtpAddress -and $MailboxDetailedRequest.ForwardingAddress) {
         "$($MailboxDetailedRequest.ForwardingAddress) $($MailboxDetailedRequest.ForwardingSmtpAddress)"
     } else {
@@ -148,8 +156,8 @@ Function Invoke-ListUserMailboxDetails {
     $TotalItemSize = try { [math]::Round([float]($TotalItemSizeString[0]) / $ItemSizeType, 2) } catch { 0 }
 
     if ($ArchiveEnabled) {
-        $ArchiveSizeType = '1{0}' -f ($TotalArchiveItemSizeString[1] ?? 'Gb')
-        $TotalArchiveItemSize = [math]::Round([float]($TotalArchiveItemSizeString[0]) / $ArchiveSizeType, 2)
+        $TotalArchiveItemSize = try { [math]::Round([float]($TotalArchiveItemSizeString[0]), 2) } catch { 0 }
+        $TotalArchiveItemCount = try { [math]::Round($ArchiveSizeRequest.ItemCount, 2) } catch { 0 }
     }
 
     # Build the GraphRequest object
@@ -169,8 +177,8 @@ Function Invoke-ListUserMailboxDetails {
         ProhibitSendReceiveQuota = $ProhibitSendReceiveQuota
         ItemCount                = [math]::Round($StatsRequest.ItemCount, 2)
         TotalItemSize            = $TotalItemSize
-        TotalArchiveItemSize     = if ($ArchiveEnabled) { $TotalArchiveItemSize } else { '0' }
-        TotalArchiveItemCount    = if ($ArchiveEnabled) { try { [math]::Round($ArchiveSizeRequest.ItemCount, 2) } catch { 0 } } else { 0 }
+        TotalArchiveItemSize     = $TotalArchiveItemSize
+        TotalArchiveItemCount    = $TotalArchiveItemCount
         BlockedForSpam           = $BlockedForSpam
         ArchiveMailBox           = $ArchiveEnabled
         AutoExpandingArchive     = $AutoExpandingArchiveEnabled
